@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.0.1
+    image: confluentinc/cp-zookeeper:7.8.0
     container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -12,13 +12,15 @@ services:
     networks:
       - warehouse-network
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      test: echo srvr | nc localhost 2181 || exit 1
+#      test: ["CMD", "nc", "-z", "localhost", "2181"]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   kafka:
-    image: confluentinc/cp-kafka:7.0.1
+    image: confluentinc/cp-kafka:7.8.0
     container_name: kafka
     depends_on:
       zookeeper:
@@ -32,59 +34,62 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 60000
     networks:
       - warehouse-network
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "9092"]
+      test: kafka-topics --bootstrap-server localhost:9092 --list || exit 1
+#      test: ["CMD", "nc", "-z", "localhost", "9092"]
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 5
+    restart: unless-stopped
 
-#  warehouse-service:
-#    build:
-#      context: ./warehouse-service
-#      dockerfile: Dockerfile
-#    container_name: warehouse-service
-#    depends_on:
-#      kafka:
-#        condition: service_healthy
-#    ports:
-#      - "3344:3344/udp"
-#      - "3355:3355/udp"
-#    environment:
-#      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-#      WAREHOUSE_ID: warehouse-1
-#      WAREHOUSE_TEMPERATURE_PORT: 3344
-#      WAREHOUSE_HUMIDITY_PORT: 3355
-#      WAREHOUSE_KAFKA_TOPIC: sensor-readings
-#    networks:
-#      - warehouse-network
-#    healthcheck:
-#      test: ["CMD", "wget", "--spider", "http://localhost:8080/actuator/health"]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 3
-#
-#  monitoring-service:
-#    build:
-#      context: ./monitoring-service
-#      dockerfile: Dockerfile
-#    container_name: monitoring-service
-#    depends_on:
-#      kafka:
-#        condition: service_healthy
-#    environment:
-#      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-#      MONITORING_KAFKA_TOPIC: sensor-readings
-#      MONITORING_TEMPERATURE_THRESHOLD: 35.0
-#      MONITORING_HUMIDITY_THRESHOLD: 50.0
-#    networks:
-#      - warehouse-network
-#    healthcheck:
-#      test: ["CMD", "wget", "--spider", "http://localhost:8080/actuator/health"]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 3
+  warehouse-service:
+    build:
+      context: .
+      dockerfile: warehouse/Dockerfile
+    container_name: warehouse-service
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "3344:3344/udp"
+      - "3355:3355/udp"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      WAREHOUSE_ID: warehouse-1
+      WAREHOUSE_TEMPERATURE_PORT: 3344
+      WAREHOUSE_HUMIDITY_PORT: 3355
+      WAREHOUSE_KAFKA_TOPIC: sensor-readings
+    networks:
+      - warehouse-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  monitoring-service:
+    build:
+      context: .
+      dockerfile: central-monitoring/Dockerfile
+    container_name: monitoring-service
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      MONITORING_KAFKA_TOPIC: sensor-readings
+      MONITORING_TEMPERATURE_THRESHOLD: 35.0
+      MONITORING_HUMIDITY_THRESHOLD: 50.0
+    networks:
+      - warehouse-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   warehouse-network:

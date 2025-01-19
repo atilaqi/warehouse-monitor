@@ -43,9 +43,11 @@ public class WarehouseService {
 
         Flux.merge(
                         temperatureServer.getMessageFlux()
-                                .map(msg -> parseReading(msg, SensorData.SensorType.TEMPERATURE)),
+                                .map(msg -> parseReading(msg, SensorData.SensorType.TEMPERATURE))
+                                .onErrorContinue((ex, msg) -> log.warn("Skipping bad message: {}", msg, ex)),
                         humidityServer.getMessageFlux()
                                 .map(msg -> parseReading(msg, SensorData.SensorType.HUMIDITY))
+                                .onErrorContinue((ex, msg) -> log.warn("Skipping bad message: {}", msg, ex))
                 )
                 .transform(this::sendToKafka)
                 .subscribe();

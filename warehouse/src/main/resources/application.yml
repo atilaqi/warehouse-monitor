@@ -1,6 +1,15 @@
 server:
   port: 8081
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
 warehouse:
   id: warehouse-1
   temperature-port: 3344
