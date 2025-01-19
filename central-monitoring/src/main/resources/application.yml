@@ -1,0 +1,22 @@
+monitoring:
+  kafka-topic: sensor-readings
+  temperature-threshold: 35.0
+  humidity-threshold: 50.0
+
+#spring:
+#  kafka:
+#    bootstrap-servers: localhost:9092
+#    consumer:
+#      group-id: monitoring-service
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+#      properties:
+#        spring.json.trusted.packages: "com.example.data"
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic: sensor-readings
+    group-id: sensor-group
+    trusted-packages: com.example.data
+
