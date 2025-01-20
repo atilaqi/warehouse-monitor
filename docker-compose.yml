@@ -58,10 +58,10 @@ services:
       - "3355:3355/udp"
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      WAREHOUSE_ID: warehouse-1
-      WAREHOUSE_TEMPERATURE_PORT: 3344
-      WAREHOUSE_HUMIDITY_PORT: 3355
-      WAREHOUSE_KAFKA_TOPIC: sensor-readings
+#      WAREHOUSE_ID: warehouse-1
+#      WAREHOUSE_TEMPERATURE_PORT: 3344
+#      WAREHOUSE_HUMIDITY_PORT: 3355
+#      WAREHOUSE_KAFKA_TOPIC: sensor-readings
     networks:
       - warehouse-network
     healthcheck:
@@ -80,9 +80,9 @@ services:
         condition: service_healthy
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      MONITORING_KAFKA_TOPIC: sensor-readings
-      MONITORING_TEMPERATURE_THRESHOLD: 35.0
-      MONITORING_HUMIDITY_THRESHOLD: 50.0
+#      MONITORING_KAFKA_TOPIC: sensor-readings
+#      MONITORING_TEMPERATURE_THRESHOLD: 35.0
+#      MONITORING_HUMIDITY_THRESHOLD: 50.0
     networks:
       - warehouse-network
     healthcheck:

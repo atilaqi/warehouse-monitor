@@ -8,6 +8,9 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+/**
+ * Netty UDP server for receiving UPD data from clients.
+ */
 public class UDPServer {
     private final int port;
     private final EventLoopGroup group;
@@ -16,6 +19,8 @@ public class UDPServer {
     public UDPServer(int port) {
         this.port = port;
         this.group = new NioEventLoopGroup();
+        //a Sink is a special type of reactive publisher that allows programmatic emission of events into a Reactive Stream (Mono/Flux).
+        // It provides a way to manually push data into a reactive stream.
         this.messageSink = Sinks.many().multicast().onBackpressureBuffer();
     }
 
@@ -33,9 +38,8 @@ public class UDPServer {
                         ch.pipeline().addLast(new SimpleChannelInboundHandler<DatagramPacket>() {
                             @Override
                             protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) {
-
                                 String reading = msg.content().toString(java.nio.charset.StandardCharsets.UTF_8);
-                                System.out.println("reading " + reading);
+                                System.out.println("UPD client data: " + reading);
                                 messageSink.tryEmitNext(reading);
                             }
                         });
