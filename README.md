@@ -1,4 +1,4 @@
-# Warehouse Monitor Demo 
+# Warehouse Monitoring Demo 
 
 ### Introduction
 This demo features two Netty servers within the warehouse service that receive UDP data from sensors 
