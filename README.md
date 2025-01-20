@@ -1,4 +1,9 @@
-# warehouse-monitor
+# Warehouse Monitor Demo 
+
+### Introduction
+This demo features two Netty servers within the warehouse service that receive UDP data from sensors 
+and forward it to a Kafka cluster. The monitoring service reads the data and prints alert information 
+to the console if any thresholds are exceeded.
 
 ### How to Run the Demo
 
