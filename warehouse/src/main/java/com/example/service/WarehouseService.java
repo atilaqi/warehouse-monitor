@@ -55,7 +55,7 @@ public class WarehouseService {
         log.info("Warehouse service started. Warehouse ID: {}", properties.id());
     }
 
-     SensorData parseReading(String message, SensorData.SensorType type) {
+     private SensorData parseReading(String message, SensorData.SensorType type) {
         System.out.println("message "+ message);
         String[] parts = message.split(";");
         String sensorId = parts[0].split("=")[1].trim();
@@ -63,7 +63,7 @@ public class WarehouseService {
         return new SensorData(properties.id(), sensorId, value, type);
     }
 
-     Flux<SenderResult<Void>> sendToKafka(Flux<SensorData> readings) {
+     private Flux<SenderResult<Void>> sendToKafka(Flux<SensorData> readings) {
         return readings
                 .doOnNext(reading -> log.debug("Sending reading: {}", reading))
                 .map(reading -> SenderRecord.<String, SensorData, Void>create(
