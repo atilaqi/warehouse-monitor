@@ -21,19 +21,22 @@ public class WarehouseService {
     private final KafkaSender<String, SensorData> kafkaSender;
     private final WarehouseProperties properties;
 
-    @Value("${spring.kafka.topic}")
+
     private String topic;
 
     public WarehouseService(
             WarehouseProperties properties,
             KafkaSender<String, SensorData> kafkaSender,
             @Qualifier("temperatureServer") UDPServer temperatureServer,
-            @Qualifier("humidityServer") UDPServer humidityServer
+            @Qualifier("humidityServer") UDPServer humidityServer,
+            @Value("${spring.kafka.topic}") String topic
+
     ) {
         this.properties = properties;
         this.kafkaSender = kafkaSender;
         this.temperatureServer = temperatureServer;
         this.humidityServer = humidityServer;
+        this.topic = topic;
     }
 
     @PostConstruct
@@ -65,10 +68,10 @@ public class WarehouseService {
 
      private Flux<SenderResult<Void>> sendToKafka(Flux<SensorData> readings) {
         return readings
-                .doOnNext(reading -> log.debug("Sending reading: {}", reading))
+                .doOnNext(reading -> log.info("Sending reading: {}", reading))
                 .map(reading -> SenderRecord.<String, SensorData, Void>create(
                         topic,
-                        0,
+                        null,
                         System.currentTimeMillis(),
                         reading.sensorId(),
                         reading,

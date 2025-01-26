@@ -43,7 +43,7 @@ public class UDPServerTest {
         // Verify the message is received correctly
         StepVerifier.create(messageFlux)
                 .expectNext(testMessage)
-                .thenCancel()
+                .thenCancel()//cancel the infinite stream after receiving testMessage.
                 .verify();
     }
 
